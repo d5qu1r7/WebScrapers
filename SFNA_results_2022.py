@@ -1,3 +1,4 @@
+import logging
 import os
 from playwright.sync_api import sync_playwright, expect
 import time
@@ -5,7 +6,12 @@ import time
 #------------------------------------------------ Working (change FIXME) ------------------------------------------------#
 # Where the archive is located.
 baselink = 'https://onlinesys.necta.go.tz/results/2022/sfna/sfna.htm'
-SAVE_FILE_PATH = '' # FIXME: Change to the perminant file path the .csv files will be stored in
+SAVE_FILE_PATH = '' # FIXME: Change to the perminant file path the screenshots will be stored in
+
+# Set up logging
+log_file_path = os.path.join(SAVE_FILE_PATH, 'PSLE_results_2023.log')
+logging.basicConfig(filename=log_file_path, level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 def interact_with_page(page):
     # Going to the page with the archives
@@ -33,14 +39,18 @@ def interact_with_page(page):
         full_row_region = row_region.locator('td').all()
         for column_region in full_row_region:
 
-            # if i != 0: #FIXME This is just for testing
-            #     continue
+            if i < 20: #FIXME This is just for testing
+                i += 1
+                continue
 
             try:
                 name_region = column_region.locator('a').inner_text(timeout=5000)
+                logging.info(f"Processing region: {name_region}")
                 print(f"Processing region: {name_region}")
             except TimeoutError:
-                print(f"Timeout occurred while getting region name number {i}. Skipping this item.")
+                error_message = f"Error occurred while getting region number {i}. Skipping this item."
+                logging.error(error_message)
+                print(error_message)
                 continue
             
             # Check for a blank name
@@ -72,14 +82,18 @@ def interact_with_page(page):
                 full_row_province = row_province.locator('td').all()
                 for column_province in full_row_province:
 
-                    # if j != 0: #FIXME This is just for testing
-                    #     continue
+                    if i == 20 and j < 2: #FIXME This is just for testing
+                        j += 1
+                        continue
 
                     try:    
                         name_province = column_province.locator('a').inner_text(timeout=5000)
+                        logging.info(f"Processing province: {name_province}")
                         print(f"Processing province: {name_province}")
                     except TimeoutError:
-                        print(f"Timeout occurred while getting province name number {j}. Skipping this item.")
+                        error_message = f"Error occurred while getting {name_region}, province number {j}. Skipping this item."
+                        logging.error(error_message)
+                        print(error_message)
                         continue
 
                     # Check for a blank name
@@ -112,14 +126,18 @@ def interact_with_page(page):
                         full_row_school = row_school.locator('td').all()
                         for column_school in full_row_school:
 
-                            # if l != 0: #FIXME This is just for testing, and only clicks on the first link
-                            #     continue
+                            if i == 20 and j == 2 and l < 37: #FIXME This is just for testing, and only clicks on the first link
+                                l += 1
+                                continue
 
                             try:
                                 name_school = column_school.locator('a').inner_text(timeout=5000)
+                                logging.info(f"Processing school: {name_school}")
                                 print(f"Processing school: {name_school}")
                             except TimeoutError:
-                                print(f"Timeout occurred while getting school name number {l}. Skipping this item.")
+                                error_message = f"Error occurred while getting {name_region}, {name_province}, school number {l}. Skipping this item."
+                                logging.error(error_message)
+                                print(error_message)
                                 continue
 
                             # Check for a blank name
@@ -256,6 +274,7 @@ def write_row_to_csv(row, file_path, file_name):
 
 # Create new playwright instance
 with sync_playwright() as pw:
+    start_time = time.time()
     browser = pw.chromium.launch(headless = True)
     context = browser.new_context()
     page = context.new_page()
@@ -265,6 +284,20 @@ with sync_playwright() as pw:
         interact_with_page(page)
     except:
         print("Something went wrong, exiting program.")
+    
+    # Record the end time
+    end_time = time.time()
+
+    # Calculate the elapsed time
+    elapsed_time = end_time - start_time
+
+    # Convert the elapsed time to hours, minutes, and seconds
+    hours, rem = divmod(elapsed_time, 3600)
+    minutes, seconds = divmod(rem, 60)
+
+    elapsed_time = f"--- {int(hours)} hours, {int(minutes)} minutes, {seconds:.2f} seconds ---"
+    logging.info(elapsed_time)
+    print(elapsed_time)
 
     page.close()
     context.close()
