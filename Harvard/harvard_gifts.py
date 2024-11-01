@@ -13,10 +13,13 @@ from playwright.sync_api import sync_playwright, expect
 import concurrent.futures
 import ollama
 
+os.environ['OLLAMA_MAX_LOADED_MODELS'] = '3'
+os.environ['OLLAMA_NUM_PARALLEL'] = '4'
+os.environ['OLLAMA_MAX_QUEUE'] = '512'
 
 '''
 download ollama
-ollama pull llama3.1
+ollama pull llama3.1 
 pip install httpx beautifulsoup4 ollama
 '''
 
@@ -45,16 +48,19 @@ MAIN_LINK_2 = '+' # 20
 MAIN_LINK_3 = '%22#gsc.tab=0&gsc.q=gifts%20to%20harvard%20%22' # Sept
 MAIN_LINK_4 = '%20' # 20
 MAIN_LINK_5 = '%22&gsc.page=' # 1
-SAVE_FILE_PATH = 'w:/RA_work_folders/Davis_Holdstock/Harvard/Harvard_gifts/' # FIXME: Change to the perminant file path the .csvs will be stored in
+SAVE_FILE_PATH = 'w:/RA_work_folders/Davis_Holdstock/Harvard/Harvard_gifts/January/' # FIXME: Change to the perminant file path the .csvs will be stored in
+
+SAVED_DAY = 0
+SAVED_PAGE = 10
 
 # Set up logging
-log_file_path = os.path.join(SAVE_FILE_PATH, 'Harvard_gifts_playwright.log')
+log_file_path = os.path.join(SAVE_FILE_PATH, 'Harvard_gifts_playwright_january.log')
 logging.basicConfig(filename=log_file_path, level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 def get_html(url):
     with httpx.Client() as client:
-        time.sleep(1)
+        time.sleep(2)
         response = client.get(url)
 
         if response.status_code != 200:
@@ -148,19 +154,33 @@ def get_urls(url, month, day):
 @timer
 def main(browser):
 
+    global SAVED_DAY, SAVED_PAGE
+
     main_url_1 = MAIN_LINK_1
     main_url_2 = MAIN_LINK_2
     main_url_3 = MAIN_LINK_3
     main_url_4 = MAIN_LINK_4
     main_url_5 = MAIN_LINK_5
+    save_day = SAVED_DAY
+    save_page = SAVED_PAGE
     months = ['Jan','Feb','March','April','May','June','July','Aug','Sept','Oct','Nov','Dec']
 
-    for month in months[1:2]:
+    for month in months[:1]:
         for day in range(31):
+
+            if day < save_day:
+                continue
+
+            SAVED_DAY = day
+            save_day = day
+
             for page in range(11):
 
-                if month == 'Feb' and day < 2:
+                if page < save_page:
                     continue
+
+                SAVED_PAGE = page
+                save_page = page
 
                 browser.goto(f'{main_url_1}{month}{main_url_2}{day + 1}{main_url_3}{month}{main_url_4}{day + 1}{main_url_5}{page + 1}')
                 # browser.goto(f'{main_url_1}{month}{main_url_2}1{main_url_3}{month}{main_url_4}1{main_url_5}{page + 1}')
@@ -171,7 +191,7 @@ def main(browser):
 
                 print(f'{month} {day + 1}')
 
-                if browser.locator('main').inner_text(timeout=5000) == 'Search the Harvard Gazette\nDisplaying results for:\nGO\nSort by:\nRelevance\nNo Results':
+                if browser.locator('main').inner_text(timeout=50000) == 'Search the Harvard Gazette\nDisplaying results for:\nGO\nSort by:\nRelevance\nNo Results':
                     print("No results")
                     break
 
@@ -205,6 +225,9 @@ def main(browser):
                 # with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
                 #     futures = [executor.submit(get_urls, url, month, day) for url in deduped_list]
                 #     concurrent.futures.wait(futures)
+            
+            SAVED_PAGE = 0
+            save_page = 0
 
     # process_csv_files(starting_folder, output_file)
     
@@ -221,7 +244,9 @@ if __name__ == "__main__":
         try:
             main(page)
         except:
-            print("Something went wrong, exiting program.")
+            main(page)
+        #     # print("Something went wrong, exiting program.")
+        #     raise Exception
 
         page.close()
         context.close()
