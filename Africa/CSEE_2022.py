@@ -20,7 +20,7 @@ pip install beautifulsoup4
 
 BASE_URL = 'https://maktaba.tetea.org/exam-results/CSEE2022/index.htm'
 BASE_LINK = 'https://maktaba.tetea.org/exam-results/CSEE2022/'
-SAVE_FILE_PATH = 'w:/RA_work_folders/Davis_Holdstock/Africa/Tanzanian_School_Data/TZ_CSEE_2022/'
+SAVE_FILE_PATH = ''
 
 # Set up logging
 log_file_path = os.path.join(SAVE_FILE_PATH, 'TZ_CSEE_2022.log')
@@ -90,8 +90,8 @@ def main():
     html = get_html(BASE_URL)
     region_links = asyncio.run(fetch_table_urls(html))
     
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        futures = [executor.submit(process_school, f'{BASE_LINK}{link[1]}', link[0]) for link in region_links[:1]]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(process_school, f'{BASE_LINK}{link[1]}', link[0]) for link in region_links]
         concurrent.futures.wait(futures)
 
     print('Finished collecting data')
