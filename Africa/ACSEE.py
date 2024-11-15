@@ -20,7 +20,7 @@ BASE_URL_1 = 'https://maktaba.tetea.org/exam-results/ACSEE' #2010
 BASE_URL_2 = '/alevel.htm'
 BASE_URL_3 = '/index.htm'
 BASE_LINK = 'https://maktaba.tetea.org/exam-results/ACSEE' #2010
-SAVE_FILE_PATH = ''
+SAVE_FILE_PATH = 'w:/papers/current/african_records/TZ_ACSEE/'
 LIST_OF_YEARS = ['2005','2006','2007','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024']
 
 # Set up logging
@@ -92,11 +92,8 @@ def main():
 
     for i, year in enumerate(LIST_OF_YEARS):
 
-        if i != 0:
-            continue
-
-        # # 2005 and 2007 HTML is messed up
-        # if i == 0 or i == 2:
+        # if i != 18: # This is for testing only
+        #     continue
             
         
         if i > 3 and i < 9:
@@ -112,51 +109,54 @@ def main():
         if i <= 3:
             # Create new playwright instance
             with sync_playwright() as pw:
-                browser = pw.chromium.launch(headless = False)
+                browser = pw.chromium.launch(headless = True)
                 context = browser.new_context()
                 page = context.new_page()
 
-                # If the list scraper breaks, the try catch block will restart it
-                try:
-                    page.goto(f"{BASE_URL_1}{year}{BASE_URL_2}l")
-                    tables = page.locator('table').all()
-                    save_file_path = SAVE_FILE_PATH
+                for link in region_links:
+                    # If the list scraper breaks, the try catch block will restart it
+                    try:
+                        page.goto(f"{BASE_URL_1}{year}/{link[1]}")
+                        tables = page.locator('table').all()
+                        save_file_path = SAVE_FILE_PATH
 
-                    for i, table in enumerate(tables):
-                        file_path = f'{save_file_path}{year}/{school_name.replace(" ", "_")}/'
-                        file_name = f'table'
+                        for i, table in enumerate(tables):
+                            file_path = f'{save_file_path}{year}/{link[0].replace(" ", "_")}/'
+                            file_name = f'table'
 
-                        # Get all the rows of the table
-                        rows = table.find_all('tr')
+                            # Get all the rows of the table
+                            rows = table.locator('tr').all()
 
-                        # Loop through the rows of the table
-                        for row in rows:
-                            row_data = []
+                            # Loop through the rows of the table
+                            for row in rows:
+                                row_data = []
 
-                            columns = row.find_all(['td', 'th'])
-                            for column in columns:
-                                # Adding everything to a row and writing to .csv
-                                row_data.append(column.text.strip().replace("\n", " ").replace(",", " "))
-                            write_row_to_csv(row_data, file_path, file_name)
+                                columns = row.locator('td').all()
+                                for column in columns:
+                                    # Adding everything to a row and writing to .csv
+                                    row_data.append(column.inner_text().replace("\n", " ").replace(",", " "))
+                                write_row_to_csv(row_data, file_path, file_name)
 
-                        # Put space in between the tables
-                        write_row_to_csv(' ', file_path, file_name)
-                        
-                    logging.info(f"Processed school: {school_name}")
-                    print(f"Processed school: {school_name}")
-                except:
-                    # main(page)
-                    print("Something went wrong, exiting program.")
-                    screenshot_page(page, SAVE_FILE_PATH, 'problem', False)
-                    raise Exception
+                            # Put space in between the tables
+                            write_row_to_csv(' ', file_path, file_name)
+                            
+                        logging.info(f"Processed school: {link[0]}")
+                        print(f"Processed school: {link[0]}")
+                    except:
+                        # main(page)
+                        print("Something went wrong, exiting program.")
+                        screenshot_page(page, SAVE_FILE_PATH, 'problem', False)
+                        raise Exception
 
                 page.close()
                 context.close()
                 browser.close()
         else:
             with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-                futures = [executor.submit(process_school, f'{BASE_LINK}{year}/{link[1]}', link[0], year) for link in region_links[:1]]
+                futures = [executor.submit(process_school, f'{BASE_LINK}{year}/{link[1]}', link[0], year) for link in region_links]
                 concurrent.futures.wait(futures)
+
+        print(f'Finished collecting data from {year}')
 
     print('Finished collecting data')
 
