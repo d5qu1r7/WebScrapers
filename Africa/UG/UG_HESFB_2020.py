@@ -14,11 +14,11 @@ pip install pdfplumber
 '''
 
 URL = 'https://www.dropbox.com/scl/fi/wbfua2aa87lvhsnlfw5dt/2019-20-HESFB-Final-List-of-Successful-Loan-Beneficiaries.-The-Tower-Post.pdf?rlkey=w85aamwdarwqbywm4y3rmca63&dl=0'
-PDF_PATH = ''
-SAVE_FILE_PATH = ''
+PDF_PATH = 'w:/papers/current/african_records/UG_HESFB_2020/HESFB_2020_loan_awards.pdf'
+SAVE_FILE_PATH = 'w:/papers/current/african_records/UG_HESFB_2020/'
 
 # Set up logging
-log_file_path = os.path.join(SAVE_FILE_PATH, 'UG_HESFB_2020_loan_awards_2.log')
+log_file_path = os.path.join(SAVE_FILE_PATH, 'UG_HESFB_2020_loan_awards.log')
 logging.basicConfig(filename=log_file_path, level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -37,7 +37,7 @@ def extract_data():
                     row = []
                     if i == 2:
                         row = ['S/No', 'Application No.', 'Name of Applicant', 'Gender', 'District of Origin', 'Admitted University', 'Admitted Course', 'Course Duration', 'Course Type', 'Region of Origin']
-                        # write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards_2')
+                        write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards')
                     else:
                         if text == '' or text[:4] == 'Page':
                             continue
@@ -47,7 +47,7 @@ def extract_data():
                         for k, column in enumerate(row):
                             row[k] = column.replace(',', '-')
 
-                        # write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards_2')
+                        write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards')
                 continue
 
             for i, text in enumerate(page_text):
@@ -62,7 +62,7 @@ def extract_data():
                     for k, column in enumerate(row):
                         row[k] = column.replace(',', '-')
 
-                    # write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards_2')
+                    write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards')
 
 # Transforms the string into desired format for csv table
 def transform_string(input_string):
@@ -216,6 +216,12 @@ def transform_string(input_string):
     # This line is also messed up
     elif input_string == '1214 HESFB/2019/06665 MIRIAM NAMULI F Mukono Uganda Institute of Allied Health and ManagDeimpleonmt aS einrv Miceeds,i cMaul Llaagbo Technology 2 years Diploma Central':
         return ['1214', 'HESFB/2019/06665', 'MIRIAM NAMULI', 'F', 'Mukono', 'Uganda Institute of Allied Health and Management Services, Mulago', 'Diploma in Medical Laboratory Technology', '2 years', 'Diploma', 'Central']
+    # This line is also messed up
+    elif input_string == '1235 HESFB/2019/05265 MOSES OLINGA M Ngora Ophthalmic Clinical Officers Training SchooDliploma in Clinical Ophthalmology 3 years Diploma Eastern':
+        return ['1235', 'HESFB/2019/05265', 'MOSES OLINGA', 'M', 'Ngora', 'Ophthalmic Clinical Officers Training School', 'Diploma in Clinical Ophthalmology', '3 years', 'Diploma', 'Eastern']
+    # This line is also messed up
+    elif input_string == '1377 HESFB/2019/04078 PAUL MUWANGUZI M Gomba Uganda Institute of Allied Health and ManagDeimpleonmt aS einrv Oicretsh,o Mpuedlaigc oTechnology 3 years Diploma Central':
+        return ['1377', 'HESFB/2019/04078', 'PAUL MUWANGUZI', 'M', 'Gomba', 'Uganda Institute of Allied Health and Management Services, Mulago', 'Diploma in Orthopedic Medicine', '3 years', 'Diploma', 'Central']
     elif match:
         return list(match.groups())
     else:
