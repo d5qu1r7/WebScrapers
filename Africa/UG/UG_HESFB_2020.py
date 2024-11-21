@@ -18,7 +18,7 @@ PDF_PATH = ''
 SAVE_FILE_PATH = ''
 
 # Set up logging
-log_file_path = os.path.join(SAVE_FILE_PATH, 'UG_HESFB_2020_loan_awards.log')
+log_file_path = os.path.join(SAVE_FILE_PATH, 'UG_HESFB_2020_loan_awards_2.log')
 logging.basicConfig(filename=log_file_path, level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -37,7 +37,7 @@ def extract_data():
                     row = []
                     if i == 2:
                         row = ['S/No', 'Application No.', 'Name of Applicant', 'Gender', 'District of Origin', 'Admitted University', 'Admitted Course', 'Course Duration', 'Course Type', 'Region of Origin']
-                        write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards')
+                        # write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards_2')
                     else:
                         if text == '' or text[:4] == 'Page':
                             continue
@@ -47,7 +47,7 @@ def extract_data():
                         for k, column in enumerate(row):
                             row[k] = column.replace(',', '-')
 
-                        write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards')
+                        # write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards_2')
                 continue
 
             for i, text in enumerate(page_text):
@@ -62,11 +62,11 @@ def extract_data():
                     for k, column in enumerate(row):
                         row[k] = column.replace(',', '-')
 
-                    write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards')
+                    # write_row_to_csv(row, SAVE_FILE_PATH, 'data_loan_awards_2')
 
 # Transforms the string into desired format for csv table
 def transform_string(input_string):
-    pattern = r'(\d+)\s+(HESFB/2019/\d+)\s+(.*?)([FM])\s+([A-Za-z]+)\s+((?:.*?)(?:Health Science|Institute Kigumba|Training Insti|School|Clinical Officers|Fortportal|INSTITUTE|Midwifery|Officers,Gulu|Comprehensive Nursing|BusinessSch|University|Technology|College|College Mulago|College,Lira|College, Bushenyi|College,Elgon|Mbale|Management|Science|Tech ))(.*?)\s*(\d+.+years)\s+([A-Za-z]+)\s+([A-Za-z]+)'
+    pattern = r'(\d+)\s+(HESFB/2019/\d+)\s+(.*?)([FM])\s+([A-Za-z]+)\s+(.*?)((?:BSc|Bsc|BSC|B\.|diploma|Diploma|Dip|B |Bachelor|BA )(?:.*?))\s*(\d+.+years)\s+([A-Za-z]+)\s+([A-Za-z]+)'
     match = re.match(pattern, input_string)
     
     # This line is messed up
@@ -186,6 +186,36 @@ def transform_string(input_string):
     # This line is also messed up
     elif input_string == '1789 HESFB/2019/02749 VIVIAN NASSUNA F Wakiso Uganda Institute of Allied Health and ManagDeimpleonmt aS einrv Picuebsl,i Mc Huelaagltoh Dentistry 3 years Diploma Central':
         return ['1789', 'HESFB/2019/02749', 'VIVIAN NASSUNA', 'F', 'Wakiso', 'Uganda Institute of Allied Health and Management Services, Mulago', 'Diploma in Public Health Dentistry', '3 years', 'Diploma', 'Central']
+    # This line is also messed up
+    elif input_string == '28 HESFB/2019/06407 AGNES ASIIMWE F Mbarara Uganda Institute of Allied Health and ManagDeimpleonmt aS einrv Eicnevsi,r Monumlaegnotal Health Science 2 years Diploma Western':
+        return ['28', 'HESFB/2019/06407', 'AGNES ASIIMWE', 'F', 'Mbarara', 'Uganda Institute of Allied Health and Management Services, Mulago', 'Diploma in Environmental Health Science', '2 years', 'Diploma', 'Western']
+    # This line is also messed up
+    elif input_string == '143 HESFB/2019/08031 ASSUMPTA MARY ATUHAIRE F Masindi Uganda Institute of Allied Health and ManagDeimpleonmt aS einrv Miceeds,i cMaul Llaagbooratory Technology 2 years Diploma Western':
+        return ['143', 'HESFB/2019/08031', 'ASSUMPTA MARY ATUHAIRE', 'F', 'Masindi', 'Uganda Institute of Allied Health and Management Services, Mulago', 'Diploma in Medical Laboratory Technology', '2 years', 'Diploma', 'Western']
+    # This line is also messed up
+    elif input_string == '385 HESFB/2019/05170 DEOGRATIUS LUKYAMUZI M Gomba Uganda Institute of Information and CommuDniipclaotmioan sin T Iencfhonrmolaotgiyon Technology 2 years Diploma Central':
+        return ['385', 'HESFB/2019/05170', 'DEOGRATIUS LUKYAMUZI', 'M', 'Gomba', 'Uganda Institute of Information and Communications Technology', 'Diploma in Information Technology', '2 years', 'Diploma', 'Central']
+    # This line is also messed up
+    elif input_string == '664 HESFB/2019/08314 GOODHOPE RWOTOMIYO M Gulu Uganda Institute of Allied Health and ManagDeimp einn tM Seedrvicicael sL,a Mbourlaagtoory Technology 3 years Diploma Northern':
+        return ['664', 'HESFB/2019/08314', 'GOODHOPE RWOTOMIYO', 'M', 'Gulu', 'Uganda Institute of Allied Health and Management Services, Mulago', 'Dip in Medical Laboratory Technology', '3 years', 'Diploma', 'Northern']
+    # This line is also messed up
+    elif input_string == '879 HESFB/2019/05443 JIMMY WAISWA M Bugiri Uganda Institute of Allied Health and ManagDeimpleonmt aS einrv Miceeds,i cMaul Llaagbo Technology 2 years Diploma Eastern':
+        return ['879', 'HESFB/2019/05443', 'JIMMY WAISWA', 'M', 'Bugiri', 'Uganda Institute of Allied Health and Management Services, Mulago', 'Diploma in Medical Laboratory Technology', '2 years', 'Diploma', 'Eastern']
+    # This line is also messed up
+    elif input_string == '967 HESFB/2019/04551 JOSEPH TEBAKOL M Napak Butabika School of Psychiatric Clinical OfficeDrisploma in Clinical Medicine in Psychiatry 3 years Diploma Northern':
+        return ['967', 'HESFB/2019/04551', 'JOSEPH TEBAKOL', 'M', 'Napak', 'Butabika School of Psychiatric Clinical Officers', 'Diploma in Clinical Medicine in Psychiatry', '3 years', 'Diploma', 'Northern']
+    # This line is also messed up
+    elif input_string == '1078 HESFB/2019/06041 LASTUS NAMANYA M Bushenyi Uganda Institute of Allied Health and ManagDeimpleonmt aS einrv Miceeds,i cMaul Llaagbooratory Technology 2 years Diploma Western':
+        return ['1078', 'HESFB/2019/06041', 'LASTUS NAMANYA', 'M', 'Bushenyi', 'Uganda Institute of Allied Health and Management Services, Mulago', 'Diploma in Medical Laboratory Technology', '2 years', 'Diploma', 'Western']
+    # This line is also messed up
+    elif input_string == '1165 HESFB/2019/07933 MARTIN EKELLOT M Katakwi Uganda Institute of Information and CommuDniipclaotmioan sin T Iencfhonrmolaotgiyon Technology 2 years Diploma Eastern':
+        return ['1165', 'HESFB/2019/07933', 'MARTIN EKELLOT', 'M', 'Katakwi', 'Uganda Institute of Information and Communications Technology', 'Diploma in Information Technology', '2 years', 'Diploma', 'Eastern']
+    # This line is also messed up
+    elif input_string == '1193 HESFB/2019/07851 MEDARD AGABA M Bushenyi Uganda Institute of Allied Health and ManagDeimpleonmt aS einrv Eicnevsi,r Monumlaegnotal Health Science 2 years Diploma Western':
+        return ['1193', 'HESFB/2019/07851', 'MEDARD AGABA', 'M', 'Bushenyi', 'Uganda Institute of Allied Health and Management Services, Mulago', 'Diploma in Environmental Health Science', '2 years', 'Diploma', 'Western']
+    # This line is also messed up
+    elif input_string == '1214 HESFB/2019/06665 MIRIAM NAMULI F Mukono Uganda Institute of Allied Health and ManagDeimpleonmt aS einrv Miceeds,i cMaul Llaagbo Technology 2 years Diploma Central':
+        return ['1214', 'HESFB/2019/06665', 'MIRIAM NAMULI', 'F', 'Mukono', 'Uganda Institute of Allied Health and Management Services, Mulago', 'Diploma in Medical Laboratory Technology', '2 years', 'Diploma', 'Central']
     elif match:
         return list(match.groups())
     else:
