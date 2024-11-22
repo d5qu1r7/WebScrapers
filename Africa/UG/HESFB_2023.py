@@ -30,7 +30,7 @@ def extract_data():
         for j in range(pdf_length):
             page_text = pdf.pages[j].extract_text().split('\n')
 
-            if j == 0 or j == 13:
+            if j == 0:
                 for i, text in enumerate(page_text):
                     if i <= 1:
                         continue
