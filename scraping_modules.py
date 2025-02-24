@@ -114,3 +114,36 @@ def image_download(page, file_path, file_name, download_button):
         download_button.click()
         download = download_info.value
     download.save_as(save_path)
+
+@timer
+def combine_csv_files(starting_folder, output_file):
+    # Walk through the directory structure
+    for root, dirs, files in os.walk(starting_folder):
+        for file in files:
+            if file.endswith(".csv"):
+                file_path = os.path.join(root, file)
+
+                try:
+                    # Try UTF-8 first
+                    with open(file_path, 'r', encoding='utf-8') as file2:
+                        csv_reader = csv.reader(file2)
+                        process_rows(csv_reader, starting_folder, output_file)
+                except UnicodeDecodeError:
+                    try:
+                        # If UTF-8 fails, try with utf-8-sig (handles BOM)
+                        with open(file_path, 'r', encoding='utf-8-sig') as file2:
+                            csv_reader = csv.reader(file2)
+                            process_rows(csv_reader, starting_folder, output_file)
+                    except UnicodeDecodeError:
+                        print(f"Warning: Could not process {file_path} - encoding issues")
+
+def process_rows(csv_reader, starting_folder, output_file):
+    for row in csv_reader:
+        if row == ['No data available in table']:
+            new_row = ["NA"]
+            write_row_to_csv(new_row, starting_folder, output_file)
+            print(new_row)
+            continue
+        
+        write_row_to_csv(row, starting_folder, output_file)
+        print(row)
